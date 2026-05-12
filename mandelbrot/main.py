@@ -6,7 +6,7 @@ xmin, xmax = -2.0, 1.0
 ymin, ymax = -1.5, 1.5
 
 # 解像度
-width, height = 800, 800
+width, height = 1000, 1000
 
 # 最大反復回数
 max_iter = 100
@@ -22,7 +22,7 @@ C = X + 1j * Y
 Z = np.zeros_like(C)
 
 # 発散回数記録用
-divergence_step = np.zeros(C.shape, dtype=int)
+divergence_step = np.zeros(C.shape, dtype=float)
 
 # まだ発散していない点
 mask = np.ones(C.shape, dtype=bool)
@@ -39,7 +39,11 @@ for i in range(max_iter):
     newly_diverged = diverged & mask
 
     # 発散回数を記録
-    divergence_step[newly_diverged] = i
+    abs_z = np.abs(Z[newly_diverged])
+
+    nu = i + 1 - np.log(np.log(abs_z)) / np.log(2)
+
+    divergence_step[newly_diverged] = nu
 
     # 発散済みを除外
     mask &= ~diverged
@@ -51,7 +55,8 @@ plt.imshow(
     divergence_step,
     extent=[xmin, xmax, ymin, ymax],
     cmap="twilight_shifted",
-    origin="lower"
+    origin="lower",
+    interpolation="bicubic"
 )
 
 plt.colorbar(label="Iterations")
