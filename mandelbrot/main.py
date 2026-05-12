@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def mandelbrot(cx, cy, scale=1.0, width=800, height=800, max_iter=100):
+def mandelbrot(cx, cy, scale=1.0, width=800, height=800):
+
+    # 反復回数
+    max_iter = int(100 + 20 * np.log2(scale + 1))
 
     # 描画範囲
     base_width = 3.0
@@ -64,20 +67,48 @@ def mandelbrot(cx, cy, scale=1.0, width=800, height=800, max_iter=100):
     # 描画
     plt.figure(figsize=(8, 8))
 
-    plt.imshow(
+    extent = [xmin, xmax, ymin, ymax]
+
+    img = plt.imshow(
         divergence_step,
-        extent = [xmin, xmax, ymin, ymax],
+        extent = extent,
         cmap = "twilight_shifted",
         origin = "lower",
         interpolation = "bicubic"
     )
 
+    def onclick(event):
+
+        if event.xdata is None or event.ydata is None:
+            return
+
+        new_cx = event.xdata
+        new_cy = event.ydata
+
+        plt.close()
+
+        mandelbrot(
+            new_cx,
+            new_cy,
+            scale=scale * 2,
+            width=width,
+            height=height
+        )
+
+    plt.gcf().canvas.mpl_connect(
+    "button_press_event",
+    onclick
+    )
+
     plt.colorbar(label="Iterations")
 
-    plt.title("Mandelbrot Set")
+    plt.title(
+        f"Mandelbrot Set "
+        f"(scale={scale:.2f}, max_iter={max_iter})"
+    )
     plt.xlabel("Re(c)")
     plt.ylabel("Im(c)")
 
     plt.show()
 
-mandelbrot(-0.75, 0.1, scale=10)
+mandelbrot(-0.75, 0.1, scale=1)
