@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def mandelbrot(cx, cy, scale=1.0, width=800, height=800):
+# ズーム履歴
+history = []
+
+def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
 
     # 反復回数
     max_iter = int(100 + 20 * np.log2(scale + 1))
@@ -64,6 +67,9 @@ def mandelbrot(cx, cy, scale=1.0, width=800, height=800):
         # 発散済みを除外
         mask &= ~diverged
 
+    # 最後まで発散しなかった点
+    divergence_step[mask] = 0
+
     # 描画
     plt.figure(figsize=(8, 8))
 
@@ -72,15 +78,18 @@ def mandelbrot(cx, cy, scale=1.0, width=800, height=800):
     img = plt.imshow(
         divergence_step,
         extent = extent,
-        cmap = "twilight_shifted",
+        cmap = "viridis",
         origin = "lower",
         interpolation = "bicubic"
     )
 
+    # クリックでズーム機能
     def onclick(event):
 
         if event.xdata is None or event.ydata is None:
             return
+
+        history.append((cx, cy, scale))
 
         new_cx = event.xdata
         new_cy = event.ydata
@@ -94,6 +103,29 @@ def mandelbrot(cx, cy, scale=1.0, width=800, height=800):
             width=width,
             height=height
         )
+
+    # キーボードで戻る機能
+    def on_key(event):
+
+        if event.key == "backspace" and len(history) > 0:
+
+            cx, cy, scale = history.pop()
+
+            plt.close()
+
+            mandelbrot(
+                cx,
+                cy,
+                scale=scale,
+                width=width,
+                height=height
+            )
+
+    fig = plt.gcf()
+    
+    fig.canvas.mpl_connect("button_press_event", onclick)
+    fig.canvas.mpl_connect("key_press_event", on_key)
+
 
     plt.gcf().canvas.mpl_connect(
     "button_press_event",
