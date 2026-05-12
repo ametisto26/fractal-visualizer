@@ -126,12 +126,6 @@ def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
     fig.canvas.mpl_connect("button_press_event", onclick)
     fig.canvas.mpl_connect("key_press_event", on_key)
 
-
-    plt.gcf().canvas.mpl_connect(
-    "button_press_event",
-    onclick
-    )
-
     plt.colorbar(label="Iterations")
 
     plt.title(
