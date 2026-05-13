@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # ズーム履歴
 history = []
 
-def julia(cx, cy, scale=1.0, width=1200, height=1200):
+def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 
     # 反復回数
     max_iter = int(100 + 20 * np.log2(scale + 1))
@@ -24,9 +24,6 @@ def julia(cx, cy, scale=1.0, width=1200, height=1200):
     # 解像度
     # width, height：引数をそのまま使う
 
-    # 最大反復回数
-    # max_iter：引数をそのまま使う
-
     # 複素平面
     x = np.linspace(xmin, xmax, width)
     y = np.linspace(ymin, ymax, height)
@@ -34,14 +31,11 @@ def julia(cx, cy, scale=1.0, width=1200, height=1200):
     X, Y = np.meshgrid(x, y)
     Z = X + 1j * Y
 
-    # 定数
-    c = complex(cx, cy)
-
     # 発散回数記録用
-    divergence_step = np.zeros(Z.shape, dtype=float)
+    divergence_step = np.full(Z.shape, max_iter, dtype=float)
 
     #初期化
-    divergence_step[:] = max_iter
+    # divergence_step[:] = max_iter
 
     # まだ発散していない点
     mask = np.ones(Z.shape, dtype=bool)
@@ -71,70 +65,54 @@ def julia(cx, cy, scale=1.0, width=1200, height=1200):
     divergence_step[mask] = 0
 
     # 描画
-    plt.figure(figsize=(8, 8))
+    fig, ax = plt.subplots(figsize=(10, 10))
 
-    extent = [xmin, xmax, ymin, ymax]
-
-    img = plt.imshow(
+    im = ax.imshow(
         divergence_step,
-        extent = extent,
-        cmap = "viridis",
-        origin = "lower",
-        interpolation = "bicubic"
+        extent=[xmin, xmax, ymin, ymax],
+        origin="lower",
+        cmap="twilight_shifted"
     )
 
-    # クリックでズーム機能
-    def onclick(event):
+    plt.colorbar(im, ax=ax)
 
+    title = ax.set_title(f"Julia Explorer | c={c}")
+
+    def onclick(event):
         if event.xdata is None or event.ydata is None:
             return
 
-        history.append((cx, cy, scale))
-
-        new_cx = event.xdata
-        new_cy = event.ydata
-
+        new_c = complex(event.xdata, event.ydata)
         plt.close()
 
-        julia(
-            new_cx,
-            new_cy,
-            scale=scale * 2,
-            width=width,
-            height=height
-        )
+        history.append((c, cx, cy, scale))
 
-    # キーボードで戻る機能
-    def on_key(event):
+        julia(new_c, cx, cy, scale)
 
-        if event.key == "backspace" and len(history) > 0:
-
-            cx, cy, scale = history.pop()
-
+    def onkey(event):
+        if event.key == "backspace" and history:
+            c, cx, cy, scale = history.pop()
             plt.close()
+            julia(c, cx, cy, scale)
 
-            julia(
-                cx,
-                cy,
-                scale=scale,
-                width=width,
-                height=height
-            )
 
-    fig = plt.gcf()
-    
+    def on_scroll(event):
+
+        if event.button == "up":
+            new_scale = scale * 1.2
+        elif event.button == "down":
+            new_scale = scale / 1.2
+
+        plt.close()
+        julia(c, cx, cy, new_scale, width, height)
+
+
     fig.canvas.mpl_connect("button_press_event", onclick)
-    fig.canvas.mpl_connect("key_press_event", on_key)
-
-    plt.colorbar(label="Iterations")
-
-    plt.title(
-        f"Julia Set "
-        f"(scale={scale:.2f}, max_iter={max_iter})"
-    )
-    plt.xlabel("Re(c)")
-    plt.ylabel("Im(c)")
+    fig.canvas.mpl_connect("key_press_event", onkey)
+    fig.canvas.mpl_connect("scroll_event", on_scroll)
 
     plt.show()
 
-julia(0.4, 0.24, scale=1)
+c = 0.4 + 0.24j
+
+julia(c)
