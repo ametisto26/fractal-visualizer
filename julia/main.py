@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 # ズーム履歴
 history = []
 
+# お気に入り保存
+favorites = []
+
 def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 
     # 反復回数
@@ -91,9 +94,15 @@ def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 
     def onkey(event):
         if event.key == "backspace" and history:
-            c, cx, cy, scale = history.pop()
+            prev_c, prev_cx, prev_cy, prev_scale = history.pop()
             plt.close()
-            julia(c, cx, cy, scale)
+            julia(prev_c, prev_cx, prev_cy, prev_scale)
+        
+        elif event.key == "s":
+
+            favorites.append(c)
+            print(f"Saved favorite: {c}")
+
 
 
     def on_scroll(event):
@@ -102,6 +111,8 @@ def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
             new_scale = scale * 1.2
         elif event.button == "down":
             new_scale = scale / 1.2
+        else:
+            return
 
         plt.close()
         julia(c, cx, cy, new_scale, width, height)
@@ -116,3 +127,5 @@ def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 c = 0.4 + 0.24j
 
 julia(c)
+for i, z in enumerate(favorites):
+    print(i, z)
