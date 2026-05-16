@@ -4,15 +4,18 @@ import matplotlib.pyplot as plt
 # ズーム履歴
 history = []
 
-def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
+def mandelbrot(cx, cy, scale=1.0):
 
-    # 反復回数
-    max_iter = int(100 + 20 * np.log2(scale + 1))
+    # 最大反復回数
+    max_iter = int(300 + 50 * np.log2(scale + 1))
 
     # 描画範囲
     base_width = 3.0
     base_height = 3.0
 
+    # 解像度
+    width=int(1200 + 200 * np.log2(scale + 1))
+    height = width
     x_width = base_width / scale
     y_height = base_height / scale
 
@@ -21,18 +24,12 @@ def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
     ymin = cy - y_height / 2
     ymax = cy + y_height / 2
 
-    # 解像度
-    # width, height：引数をそのまま使う
-
-    # 最大反復回数
-    # max_iter：引数をそのまま使う
-
     # 複素平面
     x = np.linspace(xmin, xmax, width)
     y = np.linspace(ymin, ymax, height)
 
     X, Y = np.meshgrid(x, y)
-    C = X + 1j * Y
+    C = np.array(X + 1j * Y, dtype=np.complex128)
 
     # 初期値
     Z = np.zeros_like(C)
@@ -40,7 +37,7 @@ def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
     # 発散回数記録用
     divergence_step = np.zeros(C.shape, dtype=float)
 
-    #初期化
+    # 初期化
     divergence_step[:] = max_iter
 
     # まだ発散していない点
@@ -99,9 +96,7 @@ def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
         mandelbrot(
             new_cx,
             new_cy,
-            scale=scale * 2,
-            width=width,
-            height=height
+            scale=scale * 2
         )
 
     # キーボードで戻る機能
@@ -116,9 +111,7 @@ def mandelbrot(cx, cy, scale=1.0, width=1200, height=1200):
             mandelbrot(
                 cx,
                 cy,
-                scale=scale,
-                width=width,
-                height=height
+                scale=scale
             )
 
     fig = plt.gcf()
