@@ -35,13 +35,28 @@ def mandelbrot(cx, cy, scale=1.0):
     Z = np.zeros_like(C)
 
     # 発散回数記録用
-    divergence_step = np.zeros(C.shape, dtype=float)
+    divergence_step = np.full(C.shape, max_iter, dtype=float)
 
-    # 初期化
-    divergence_step[:] = max_iter
+    # cardioid 判定
+    q = (X - 0.25)**2 + Y**2
 
-    # まだ発散していない点
-    mask = np.ones(C.shape, dtype=bool)
+    inside_cardioid = (
+        q * (q + (X - 0.25))
+        < 0.25 * Y**2
+    )
+
+    # period-2 bulb
+    inside_bulb = (
+        (X + 1)**2 + Y**2
+        < 0.0625
+    )
+
+    inside = inside_cardioid | inside_bulb
+
+    divergence_step[inside] = 0
+
+    mask = ~inside
+    # mask = np.ones(C.shape, dtype=bool)
 
     for i in range(max_iter):
 
@@ -49,7 +64,10 @@ def mandelbrot(cx, cy, scale=1.0):
         Z[mask] = Z[mask]**2 + C[mask]
 
         # 発散判定
-        diverged = np.abs(Z) > 2
+        diverged = (
+            Z.real * Z.real
+            + Z.imag * Z.imag
+        ) > 4.0
 
         # 今回新しく発散した点
         newly_diverged = diverged & mask
