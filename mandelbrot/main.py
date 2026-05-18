@@ -117,6 +117,32 @@ def mandelbrot(cx, cy, scale=1.0):
             scale=scale * 2
         )
 
+    # スクロールで拡大・縮小
+    def on_scroll(event):
+
+        if event.xdata is None or event.ydata is None:
+            return
+        
+        history.append((cx, cy, scale))
+
+        if event.button == "up":
+            new_scale = scale * 1.2
+        elif event.button == "down":
+            new_scale = scale / 1.2
+        else:
+            return
+
+        new_cx = event.xdata
+        new_cy = event.ydata
+
+        plt.close()
+
+        mandelbrot(
+            new_cx,
+            new_cy,
+            new_scale
+        )
+
     # キーボードで戻る機能
     def on_key(event):
 
@@ -135,6 +161,7 @@ def mandelbrot(cx, cy, scale=1.0):
     fig = plt.gcf()
     
     fig.canvas.mpl_connect("button_press_event", onclick)
+    fig.canvas.mpl_connect("scroll_event", on_scroll)
     fig.canvas.mpl_connect("key_press_event", on_key)
 
     plt.colorbar(label="Iterations")
