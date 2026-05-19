@@ -14,7 +14,7 @@ def mandelbrot(cx, cy, scale=1.0):
     base_height = 3.0
 
     # 解像度
-    width=int(1200 + 200 * np.log2(scale + 1))
+    width=int(1600 + 300 * np.log2(scale + 1))
     height = width
     x_width = base_width / scale
     y_height = base_height / scale
