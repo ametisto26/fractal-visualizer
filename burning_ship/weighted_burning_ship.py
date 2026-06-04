@@ -136,7 +136,7 @@ def burning_ship(cx, cy, scale=1.0, width=1200, height=1200):
     plt.colorbar(label="Iterations")
 
     plt.title(
-        f"Burning Ship Fractal "
+        f"Weighted Burning Ship Fractal "
         f"(scale={scale:.2f}, max_iter={max_iter})"
     )
     plt.xlabel("Re(c)")
