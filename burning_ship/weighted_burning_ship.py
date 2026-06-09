@@ -85,7 +85,7 @@ def burning_ship(cx, cy, scale=1.0, width=1200, height=1200):
     img = plt.imshow(
         divergence_step,
         extent = extent,
-        cmap = "viridis",
+        cmap = "PuOr_r",
         origin = "lower",
         interpolation = "bicubic"
     )
