@@ -176,3 +176,4 @@ def mandelbrot(cx, cy, scale=1.0):
     plt.show()
 
 mandelbrot(-0.75, 0.1, scale=1)
+# mandelbrot(-0.421, 0.58, scale=256.0)
