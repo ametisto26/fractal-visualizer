@@ -1,5 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
+from datetime import datetime
+
+# 画像保存用フォルダ
+SAVE_DIR = Path("images")
+SAVE_DIR.mkdir(exist_ok=True)
 
 # ズーム履歴
 history = []
@@ -86,11 +92,11 @@ def mandelbrot(cx, cy, scale=1.0):
     divergence_step[mask] = 0
 
     # 描画
-    plt.figure(figsize=(8, 8))
+    fig, ax = plt.subplots(figsize=(8, 8))
 
     extent = [xmin, xmax, ymin, ymax]
 
-    img = plt.imshow(
+    img = ax.imshow(
         divergence_step,
         extent = extent,
         cmap = "viridis",
@@ -109,7 +115,7 @@ def mandelbrot(cx, cy, scale=1.0):
         new_cx = event.xdata
         new_cy = event.ydata
 
-        plt.close()
+        plt.close(fig)
 
         mandelbrot(
             new_cx,
@@ -135,7 +141,7 @@ def mandelbrot(cx, cy, scale=1.0):
         new_cx = event.xdata
         new_cy = event.ydata
 
-        plt.close()
+        plt.close(fig)
 
         mandelbrot(
             new_cx,
@@ -148,32 +154,54 @@ def mandelbrot(cx, cy, scale=1.0):
 
         if event.key == "backspace" and len(history) > 0:
 
-            cx, cy, scale = history.pop()
+            prev_cx, prev_cy, prev_scale = history.pop()
 
-            plt.close()
+            plt.close(fig)
 
             mandelbrot(
-                cx,
-                cy,
-                scale=scale
+                prev_cx,
+                prev_cy,
+                scale=prev_scale
             )
 
-    fig = plt.gcf()
+        elif event.key == "p":
+            # タイムスタンプ取得
+            timestamp = datetime.now().strftime(
+                "%Y%m%d_%H%M%S"
+            )
+
+            filename = SAVE_DIR / (
+                f"mandelbrot_{timestamp}_"
+                f"{cx:.6f}_"
+                f"{cy:.6f}_"
+                f"{scale:.2f}.png"
+            )
+
+            fig.savefig(
+                filename,
+                dpi=600,
+                bbox_inches="tight"
+            )
+
+            print(f"saved: {filename}")
+            print(f"center=({cx:.12f}, {cy:.12f})")
+            print(f"scale={scale}")
+
     
     fig.canvas.mpl_connect("button_press_event", onclick)
     fig.canvas.mpl_connect("scroll_event", on_scroll)
     fig.canvas.mpl_connect("key_press_event", on_key)
 
-    plt.colorbar(label="Iterations")
+    fig.colorbar(img,ax=ax,label="Iterations")
 
-    plt.title(
+    ax.set_title(
         f"Mandelbrot Set "
         f"(scale={scale:.2f}, max_iter={max_iter})"
     )
-    plt.xlabel("Re(c)")
-    plt.ylabel("Im(c)")
+    ax.set_xlabel("Re(c)")
+    ax.set_ylabel("Im(c)")
 
     plt.show()
 
-mandelbrot(-0.75, 0.1, scale=1)
-# mandelbrot(-0.421, 0.58, scale=256.0)
+# mandelbrot(-0.75, 0.1, scale=1)
+mandelbrot(-0.421, 0.58, scale=256.0)
