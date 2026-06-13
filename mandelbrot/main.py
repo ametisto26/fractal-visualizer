@@ -62,7 +62,6 @@ def mandelbrot(cx, cy, scale=1.0):
     divergence_step[inside] = 0
 
     mask = ~inside
-    # mask = np.ones(C.shape, dtype=bool)
 
     for i in range(max_iter):
 
@@ -87,6 +86,9 @@ def mandelbrot(cx, cy, scale=1.0):
 
         # 発散済みを除外
         mask &= ~diverged
+        
+        if not mask.any():
+            break
 
     # 最後まで発散しなかった点
     divergence_step[mask] = 0
@@ -203,5 +205,5 @@ def mandelbrot(cx, cy, scale=1.0):
 
     plt.show()
 
-# mandelbrot(-0.75, 0.1, scale=1)
-mandelbrot(-0.421, 0.58, scale=256.0)
+mandelbrot(-0.75, 0.1, scale=1)
+# mandelbrot(-0.421, 0.58, scale=256.0)
