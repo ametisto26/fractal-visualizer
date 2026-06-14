@@ -101,7 +101,7 @@ def mandelbrot(cx, cy, scale=1.0):
     img = ax.imshow(
         divergence_step,
         extent = extent,
-        cmap = "viridis",
+        cmap = "twilight_shifted",
         origin = "lower",
         interpolation = "bicubic"
     )
