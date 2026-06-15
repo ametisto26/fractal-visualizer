@@ -207,3 +207,8 @@ def mandelbrot(cx, cy, scale=1.0):
 
 mandelbrot(-0.75, 0.1, scale=1)
 # mandelbrot(-0.421, 0.58, scale=256.0)
+# mandelbrot(-0.743643887, 0.131825904, scale=256.0)
+# mandelbrot(-0.761574, -0.0847596, scale=256.0)
+# mandelbrot(-1.25066, 0.02012, scale=256.0)
+# mandelbrot(0.001643721971153, -0.822467633298876, scale=1024.0)
+# mandelbrot(-1.401155, 0.0, scale=1024.0)
