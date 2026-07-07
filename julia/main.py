@@ -1,4 +1,5 @@
 import numpy as np
+from numba import njit
 import matplotlib.pyplot as plt
 
 # ズーム履歴
@@ -7,10 +8,72 @@ history = []
 # お気に入り保存
 favorites = []
 
-def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
+@njit(cache=True)
+def compute_julia(
+    cr,
+    ci,
+    cx,
+    cy,
+    scale,
+    width,
+    height,
+):
+    max_iter = int(300 + 50 * np.log2(scale + 1))
 
-    # 反復回数
-    max_iter = int(100 + 20 * np.log2(scale + 1))
+    image = np.zeros((height, width), dtype=np.float64)
+
+    base_width = 3.0
+    base_height = 3.0
+
+    x_width = base_width / scale
+    y_height = base_height / scale
+
+    xmin = cx - x_width / 2
+    xmax = cx + x_width / 2
+    ymin = cy - y_height / 2
+    ymax = cy + y_height / 2
+
+    dx = (xmax - xmin) / (width - 1)
+    dy = (ymax - ymin) / (height - 1)
+
+    for py in range(height):
+
+        imag = ymin + py * dy
+
+        for px in range(width):
+
+            real = xmin + px * dx
+
+            zr = real
+            zi = imag
+
+            value = 0.0
+
+            for i in range(max_iter):
+
+                zr2 = zr * zr
+                zi2 = zi * zi
+
+                if zr2 + zi2 > 4.0:
+
+                    r = np.sqrt(zr2 + zi2)
+
+                    value = (
+                        i
+                        + 1
+                        - np.log(np.log(r)) / np.log(2.0)
+                    )
+
+                    break
+
+                zi = 2.0 * zr * zi + ci
+                zr = zr2 - zi2 + cr
+
+            image[py, px] = value
+
+    return image
+
+def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 
     # 描画範囲
     base_width = 3.0
@@ -24,48 +87,16 @@ def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
     ymin = cy - y_height / 2
     ymax = cy + y_height / 2
 
-    # 解像度
-    # width, height：引数をそのまま使う
-
-    # 複素平面
-    x = np.linspace(xmin, xmax, width)
-    y = np.linspace(ymin, ymax, height)
-
-    X, Y = np.meshgrid(x, y)
-    Z = X + 1j * Y
-
     # 発散回数記録用
-    divergence_step = np.full(Z.shape, max_iter, dtype=float)
-
-    #初期化
-    # divergence_step[:] = max_iter
-
-    # まだ発散していない点
-    mask = np.ones(Z.shape, dtype=bool)
-
-    for i in range(max_iter):
-
-        # 未発散点だけ更新
-        Z[mask] = Z[mask]**2 + c
-
-        # 発散判定
-        diverged = np.abs(Z) > 2
-
-        # 今回新しく発散した点
-        newly_diverged = diverged & mask
-
-        # 発散回数を記録
-        abs_z = np.abs(Z[newly_diverged]) + 1e-12
-
-        nu = i + 1 - np.log(np.log(abs_z)) / np.log(2.0)
-
-        divergence_step[newly_diverged] = nu
-
-        # 発散済みを除外
-        mask &= ~diverged
-
-    # 最後まで発散しなかった点
-    divergence_step[mask] = 0
+    divergence_step = compute_julia(
+        c.real,
+        c.imag,
+        cx,
+        cy,
+        scale,
+        width,
+        height,
+    )
 
     # 描画
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -79,7 +110,7 @@ def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 
     plt.colorbar(im, ax=ax)
 
-    title = ax.set_title(f"Julia Explorer | c={c}")
+    ax.set_title(f"Julia Explorer | c={c}")
 
     def onclick(event):
         if event.xdata is None or event.ydata is None:
@@ -124,7 +155,9 @@ def julia(c, cx=0.0, cy=0.0, scale=1.0, width=1200, height=1200):
 
     plt.show()
 
-c = 0.4 + 0.24j
+# c = 0.4 + 0.24j
+# c = - 0.75 + 0.1j
+c = - 0.743643887 + 0.131825904j
 
 julia(c)
 for i, z in enumerate(favorites):
